@@ -19,23 +19,25 @@
 
 <style>
   :root{
-    --bg:#0F1626;
-    --bg-elev:#151F35;
-    --bg-card:#1B2740;
-    --line: rgba(212,168,87,0.16);
-    --line-strong: rgba(212,168,87,0.38);
-    --gold:#D4A857;
-    --gold-soft: rgba(212,168,87,0.13);
-    --income:#4FAE8E;
-    --income-soft: rgba(79,174,142,0.14);
-    --expense:#D1495B;
-    --expense-soft: rgba(209,73,91,0.14);
-    --text:#EEEAE0;
-    --text-muted:#8B93AA;
-    --text-dim:#5C6580;
+    --bg:#F7F3E9;
+    --bg-elev:#FFFFFF;
+    --bg-card:#FFFFFF;
+    --input-bg:#F3EEE1;
+    --line: rgba(168,124,46,0.18);
+    --line-strong: rgba(168,124,46,0.38);
+    --gold:#A9752E;
+    --gold-soft: rgba(169,117,46,0.10);
+    --income:#2F9E75;
+    --income-soft: rgba(47,158,117,0.11);
+    --expense:#C23B4E;
+    --expense-soft: rgba(194,59,78,0.09);
+    --text:#2B2420;
+    --text-muted:#7A7266;
+    --text-dim:#AFA898;
     --radius:16px;
     --font-display:'Be Vietnam Pro',sans-serif;
     --font-mono:'IBM Plex Mono',monospace;
+    --shadow: 0 2px 10px rgba(90,70,40,0.07), 0 1px 2px rgba(90,70,40,0.05);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
@@ -52,7 +54,7 @@
     max-width:460px;
     min-height:100vh;
     background:
-      radial-gradient(1200px 300px at 50% -80px, rgba(212,168,87,0.10), transparent),
+      radial-gradient(1200px 300px at 50% -80px, rgba(169,117,46,0.07), transparent),
       var(--bg);
     position:relative;
     padding-bottom:110px;
@@ -100,7 +102,8 @@
     border:3px double var(--gold);
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     transform:rotate(-6deg);
-    background: radial-gradient(circle at 50% 40%, rgba(212,168,87,0.08), transparent 70%);
+    background: radial-gradient(circle at 50% 40%, rgba(169,117,46,0.06), transparent 70%);
+    box-shadow:var(--shadow);
     position:relative;
   }
   .stamp::before{
@@ -129,7 +132,7 @@
   }
   .chip{
     flex:1; border-radius:12px; padding:10px 12px;
-    border:1px solid var(--line);
+    border:1px solid var(--line); box-shadow:var(--shadow);
   }
   .chip.thu{ background:var(--income-soft); }
   .chip.chi{ background:var(--expense-soft); }
@@ -147,8 +150,8 @@
     font-weight:700; font-size:14px; cursor:pointer; flex:1;
     display:flex; align-items:center; justify-content:center; gap:6px;
   }
-  .btn-thu{ background:var(--income); color:#08251C; }
-  .btn-chi{ background:var(--expense); color:#2A0A0F; }
+  .btn-thu{ background:var(--income); color:#FFFFFF; box-shadow:var(--shadow); }
+  .btn-chi{ background:var(--expense); color:#FFFFFF; box-shadow:var(--shadow); }
   .btn:active{ filter:brightness(0.92); }
 
   .import-row{ padding:0 18px; margin-bottom:6px; }
@@ -163,13 +166,13 @@
   /* ---------- Category breakdown ---------- */
   .breakdown{
     margin:20px 18px 6px; padding:14px 14px 12px;
-    background:var(--bg-card); border-radius:var(--radius); border:1px solid var(--line);
+    background:var(--bg-card); border-radius:var(--radius); border:1px solid var(--line); box-shadow:var(--shadow);
   }
   .breakdown-title{
     font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted);
     margin-bottom:10px; font-weight:700;
   }
-  .bd-bar{ display:flex; height:8px; border-radius:6px; overflow:hidden; background:var(--bg-elev); margin-bottom:10px; }
+  .bd-bar{ display:flex; height:8px; border-radius:6px; overflow:hidden; background:var(--input-bg); margin-bottom:10px; }
   .bd-seg{ height:100%; }
   .bd-list{ display:flex; flex-direction:column; gap:7px; }
   .bd-item{ display:flex; align-items:center; font-size:12.5px; color:var(--text-muted); }
@@ -208,7 +211,7 @@
 
   /* ---------- Sheets / modals ---------- */
   .overlay{
-    position:fixed; inset:0; background:rgba(5,8,16,0.6);
+    position:fixed; inset:0; background:rgba(60,46,26,0.32);
     display:none; align-items:flex-end; justify-content:center; z-index:50;
   }
   .overlay.show{ display:flex; }
@@ -218,6 +221,7 @@
     border-top:1px solid var(--line-strong);
     max-height:88vh; overflow-y:auto;
     animation:slideup 0.22s ease-out;
+    box-shadow: 0 -8px 30px rgba(90,70,40,0.14);
   }
   @keyframes slideup{ from{ transform:translateY(24px); opacity:0.4;} to{ transform:translateY(0); opacity:1;} }
   .sheet-handle{ width:36px;height:4px;border-radius:2px; background:var(--line-strong); margin:0 auto 16px; }
@@ -226,13 +230,13 @@
   .field{ margin-bottom:14px; }
   .field-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:6px; font-weight:700; }
   .amount-input{
-    width:100%; background:var(--bg-card); border:1px solid var(--line-strong); border-radius:12px;
+    width:100%; background:var(--input-bg); border:1px solid var(--line-strong); border-radius:12px;
     padding:14px; font-family:var(--font-mono); font-size:22px; font-weight:700; color:var(--text);
     text-align:right;
   }
   .amount-input:focus{ outline:none; border-color:var(--gold); }
   .text-input, .select-input{
-    width:100%; background:var(--bg-card); border:1px solid var(--line); border-radius:10px;
+    width:100%; background:var(--input-bg); border:1px solid var(--line); border-radius:10px;
     padding:11px 12px; font-family:var(--font-display); font-size:13.5px; color:var(--text);
   }
   .text-input:focus, .select-input:focus{ outline:none; border-color:var(--gold); }
@@ -297,6 +301,110 @@
   }
 
   ::-webkit-scrollbar{ width:0; height:0; }
+
+  /* ---------- Header icon buttons ---------- */
+  .icon-btn{
+    width:32px;height:32px; border-radius:50%; border:1px solid var(--line-strong);
+    background:var(--bg-elev); color:var(--gold); display:flex; align-items:center; justify-content:center;
+    font-size:15px; cursor:pointer; flex-shrink:0;
+  }
+  .icon-btn:active{ background:var(--gold-soft); }
+  .month-label{ cursor:pointer; }
+
+  /* ---------- Reminder banner ---------- */
+  .reminder{
+    margin:0 18px 14px; padding:11px 13px; border-radius:12px;
+    background:var(--gold-soft); border:1px solid var(--line-strong);
+    font-size:12px; color:var(--text);
+  }
+  .reminder-title{ font-weight:700; margin-bottom:6px; }
+  .reminder-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .reminder-chip{
+    padding:6px 10px; border-radius:20px; background:var(--bg-elev); border:1px solid var(--line-strong);
+    font-size:11.5px; font-weight:600; color:var(--gold); cursor:pointer;
+  }
+
+  /* ---------- Budget bars ---------- */
+  .bd-limit-wrap{ height:5px; border-radius:4px; background:var(--input-bg); overflow:hidden; margin:4px 0 0 16px; }
+  .bd-limit-fill{ height:100%; border-radius:4px; }
+  .bd-limit-text{ font-size:10px; margin:2px 0 0 16px; }
+
+  /* ---------- Search / filter bar ---------- */
+  .search-row{ display:flex; gap:8px; padding:0 18px; margin-top:22px; }
+  .search-input{
+    flex:1; background:var(--input-bg); border:1px solid var(--line); border-radius:10px;
+    padding:9px 12px; font-family:var(--font-display); font-size:13px; color:var(--text);
+  }
+  .search-input:focus{ outline:none; border-color:var(--gold); }
+  .filter-chips{ display:flex; gap:6px; padding:10px 18px 0; }
+  .filter-chip{
+    padding:6px 12px; border-radius:20px; border:1px solid var(--line); background:var(--bg-elev);
+    font-size:11.5px; color:var(--text-muted); cursor:pointer; font-weight:600;
+  }
+  .filter-chip.active{ border-color:var(--gold); color:var(--gold); background:var(--gold-soft); }
+
+  /* ---------- Settings menu ---------- */
+  .menu-item{
+    display:flex; align-items:center; gap:12px; padding:13px 4px; border-bottom:1px dashed var(--line);
+    cursor:pointer;
+  }
+  .menu-item:last-child{ border-bottom:none; }
+  .menu-item:active{ background:var(--gold-soft); }
+  .menu-icon{ font-size:17px; width:22px; text-align:center; flex-shrink:0; }
+  .menu-label{ flex:1; font-size:13.5px; font-weight:600; }
+  .menu-arrow{ color:var(--text-dim); font-size:13px; }
+
+  /* ---------- Recurring items ---------- */
+  .rec-item{
+    border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--bg-card);
+  }
+  .rec-top{ display:flex; align-items:center; justify-content:space-between; }
+  .rec-name{ font-weight:700; font-size:13.5px; }
+  .rec-amt{ font-family:var(--font-mono); font-size:12.5px; color:var(--text-muted); }
+  .rec-debt-bar{ height:6px; border-radius:4px; background:var(--input-bg); overflow:hidden; margin-top:8px; }
+  .rec-debt-fill{ height:100%; background:var(--gold); border-radius:4px; }
+  .rec-debt-text{ font-size:10.5px; color:var(--text-muted); margin-top:4px; }
+  .rec-actions{ display:flex; gap:8px; margin-top:10px; }
+  .rec-log-btn{
+    flex:1; background:var(--income); color:#fff; border:none; border-radius:8px; padding:8px; font-size:12px;
+    font-weight:700; cursor:pointer; font-family:var(--font-display);
+  }
+  .rec-del-btn{
+    background:transparent; color:var(--expense); border:1px solid var(--expense); border-radius:8px; padding:8px 10px;
+    font-size:12px; cursor:pointer; font-family:var(--font-display);
+  }
+
+  /* ---------- Multi-month chart ---------- */
+  .mchart{ display:flex; align-items:flex-end; gap:10px; height:170px; padding:10px 4px 0; }
+  .mchart-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .mchart-bars{ display:flex; gap:3px; align-items:flex-end; height:100%; }
+  .mchart-bar{ width:9px; border-radius:3px 3px 0 0; min-height:2px; }
+  .mchart-label{ font-size:9.5px; color:var(--text-dim); margin-top:6px; text-align:center; }
+  .mchart-legend{ display:flex; gap:16px; justify-content:center; margin-top:14px; font-size:11px; color:var(--text-muted); }
+  .mchart-legend span{ display:inline-flex; align-items:center; gap:5px; }
+  .mchart-dot{ width:8px;height:8px;border-radius:50%; display:inline-block; }
+
+  /* ---------- Lock screen ---------- */
+  .lock-wrap{
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:30px;
+  }
+  .lock-stamp{
+    width:84px;height:84px;border-radius:50%; border:3px double var(--gold); display:flex; align-items:center;
+    justify-content:center; font-size:28px; margin-bottom:22px; box-shadow:var(--shadow); background:var(--bg-elev);
+  }
+  .lock-title{ font-weight:800; font-size:16px; margin-bottom:6px; }
+  .lock-sub{ font-size:12.5px; color:var(--text-muted); margin-bottom:22px; text-align:center; }
+  .lock-input{
+    width:200px; text-align:center; letter-spacing:8px; font-family:var(--font-mono); font-size:22px;
+    background:var(--input-bg); border:1px solid var(--line-strong); border-radius:12px; padding:14px;
+    color:var(--text); margin-bottom:16px;
+  }
+  .lock-input:focus{ outline:none; border-color:var(--gold); }
+  .lock-btn{
+    background:var(--gold); color:#fff; border:none; border-radius:12px; padding:12px 28px;
+    font-weight:800; font-size:14px; cursor:pointer; font-family:var(--font-display);
+  }
 </style>
 
 <div id="app"><div class="loading-screen">Đang mở sổ quỹ…</div></div>
@@ -317,11 +425,16 @@
     appId: "1:844668189212:web:18ed5e647fec7c7c163dd9"
   };
   let transactions = [];
+  let categoryLimits = {};
+  let recurringItems = [];
   let currentDate = new Date();
   let currentMonth = currentDate.getMonth();
   let currentYear = currentDate.getFullYear();
   let quickType = "chi";
   let editingId = null;
+  let pendingRecurringId = null;
+  let searchQuery = "";
+  let filterType = "all"; // all | thu | chi
   let importRows = []; // parsed rows pending confirm
   let importHeaders = [];
   let importMapping = {}; // colIndex -> role
@@ -385,6 +498,8 @@
       docRef.onSnapshot((doc)=>{
         const data = doc.exists ? doc.data() : null;
         transactions = (data && Array.isArray(data.transactions)) ? data.transactions : [];
+        categoryLimits = (data && data.categoryLimits && typeof data.categoryLimits==='object') ? data.categoryLimits : {};
+        recurringItems = (data && Array.isArray(data.recurringItems)) ? data.recurringItems : [];
         setSyncState(doc.metadata.fromCache ? 'offline' : 'synced');
         firstSnapshot = false;
         render();
@@ -402,7 +517,7 @@
   async function saveData(){
     if(!docRef){ showToast("Chưa kết nối đồng bộ"); return; }
     try{
-      await docRef.set({ transactions, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      await docRef.set({ transactions, categoryLimits, recurringItems, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
     }catch(e){
       showToast("Chưa lưu lên mây được, sẽ tự thử lại khi có mạng");
     }
@@ -416,6 +531,14 @@
       const d = new Date(t.date + 'T00:00:00');
       return d.getMonth()===currentMonth && d.getFullYear()===currentYear;
     });
+  }
+
+  function monthKey(m,y){ return y+'-'+String(m+1).padStart(2,'0'); }
+
+  function loggedRecurringIdsThisMonth(){
+    const set = new Set();
+    txInMonth().forEach(t=>{ if(t.recurringId) set.add(t.recurringId); });
+    return set;
   }
 
   function render(){
@@ -440,11 +563,23 @@
       }).join('');
       const items = catEntries.map(([cat,val])=>{
         const pct = catTotal ? Math.round(val/catTotal*100) : 0;
-        return `<div class="bd-item">
-          <div class="bd-dot" style="background:${catColor(cat)}"></div>
-          <div class="bd-name">${cat}</div>
-          <div class="bd-pct">${pct}%</div>
-          <div class="bd-amt">${fmt(val)}đ</div>
+        const limit = categoryLimits[cat];
+        let limitHtml = '';
+        if(limit && limit>0){
+          const usedPct = Math.min(100, Math.round(val/limit*100));
+          const over = val > limit;
+          const barColor = over ? 'var(--expense)' : (usedPct>=80 ? 'var(--gold)' : 'var(--income)');
+          limitHtml = `<div class="bd-limit-wrap"><div class="bd-limit-fill" style="width:${usedPct}%;background:${barColor}"></div></div>
+            <div class="bd-limit-text" style="color:${over?'var(--expense)':'var(--text-dim)'}">${over?'Đã vượt hạn mức':'Hạn mức'} ${fmt(limit)}đ (${usedPct}%)</div>`;
+        }
+        return `<div>
+          <div class="bd-item">
+            <div class="bd-dot" style="background:${catColor(cat)}"></div>
+            <div class="bd-name">${cat}</div>
+            <div class="bd-pct">${pct}%</div>
+            <div class="bd-amt">${fmt(val)}đ</div>
+          </div>
+          ${limitHtml}
         </div>`;
       }).join('');
       breakdownHtml = `<div class="breakdown">
@@ -454,14 +589,38 @@
       </div>`;
     }
 
+    // recurring reminder banner
+    let reminderHtml = '';
+    if(recurringItems.length){
+      const loggedIds = loggedRecurringIdsThisMonth();
+      const pending = recurringItems.filter(r=>!loggedIds.has(r.id));
+      if(pending.length){
+        const chips = pending.map(r=>`<div class="reminder-chip" onclick="App.quickLogRecurring('${r.id}')">+ ${escapeHtml(r.name)}</div>`).join('');
+        reminderHtml = `<div class="reminder">
+          <div class="reminder-title">Chưa ghi tháng này</div>
+          <div class="reminder-chips">${chips}</div>
+        </div>`;
+      }
+    }
+
+    // search + filter
+    let filtered = list;
+    if(filterType!=='all') filtered = filtered.filter(t=>t.type===filterType);
+    if(searchQuery.trim()){
+      const q = searchQuery.trim().toLowerCase();
+      filtered = filtered.filter(t=> (t.category||'').toLowerCase().includes(q) || (t.note||'').toLowerCase().includes(q));
+    }
+
     // ledger grouped by date desc
     const byDate = {};
-    list.forEach(t=>{ (byDate[t.date] = byDate[t.date]||[]).push(t); });
+    filtered.forEach(t=>{ (byDate[t.date] = byDate[t.date]||[]).push(t); });
     const dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
 
     let ledgerHtml = '';
     if(!dates.length){
-      ledgerHtml = `<div class="empty">
+      ledgerHtml = list.length
+        ? `<div class="empty"><div class="empty-title">Không tìm thấy giao dịch</div><div class="empty-sub">Thử từ khóa khác hoặc bỏ bớt bộ lọc.</div></div>`
+        : `<div class="empty">
         <div class="empty-title">Sổ tháng này còn trống</div>
         <div class="empty-sub">Bấm "+ Thu" / "+ Chi" để ghi nhanh,<br>hoặc nhập cả loạt từ file sao kê ngân hàng.</div>
       </div>`;
@@ -490,10 +649,11 @@
             <div class="brand-title">Sổ <span>Quỹ</span></div>
             <div class="brand-sub">Thu chi cá nhân · ${syncDotHtml()}</div>
           </div>
+          <div class="icon-btn" onclick="App.openSettingsMenu()">⚙</div>
         </div>
         <div class="month-nav">
           <div class="month-btn" onclick="App.shiftMonth(-1)">‹</div>
-          <div class="month-label">${monthLabel()}</div>
+          <div class="month-label" onclick="App.openMonthPicker()">${monthLabel()}</div>
           <div class="month-btn" onclick="App.shiftMonth(1)">›</div>
         </div>
       </div>
@@ -519,7 +679,17 @@
         <button class="btn-import" onclick="App.openImport()">⇩ Nhập từ file sao kê ngân hàng (CSV)</button>
       </div>
 
+      ${reminderHtml}
       ${breakdownHtml}
+
+      <div class="search-row">
+        <input type="text" class="search-input" placeholder="Tìm theo hạng mục hoặc ghi chú…" value="${escapeHtml(searchQuery)}" oninput="App.updateSearch(this.value)">
+      </div>
+      <div class="filter-chips">
+        <div class="filter-chip ${filterType==='all'?'active':''}" onclick="App.setFilterType('all')">Tất cả</div>
+        <div class="filter-chip ${filterType==='thu'?'active':''}" onclick="App.setFilterType('thu')">Thu</div>
+        <div class="filter-chip ${filterType==='chi'?'active':''}" onclick="App.setFilterType('chi')">Chi</div>
+      </div>
 
       <div class="ledger">${ledgerHtml}</div>
     `;
@@ -529,10 +699,19 @@
     return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
+  function updateSearch(v){
+    searchQuery = v;
+    render();
+    const el = document.querySelector('.search-input');
+    if(el){ el.focus(); const len = el.value.length; el.setSelectionRange(len, len); }
+  }
+  function setFilterType(t){ filterType = t; render(); }
+
   // ---------- Quick add sheet ----------
   function openQuick(type, existing){
     quickType = type;
     editingId = existing ? existing.id : null;
+    pendingRecurringId = (existing && existing.recurringId) ? existing.recurringId : null;
     const cats = quickType==='thu' ? THU_CATS : CHI_CATS;
     const amt = existing ? existing.amount : '';
     const cat = existing ? existing.category : cats[0];
@@ -604,12 +783,26 @@
       const t = transactions.find(x=>x.id===editingId);
       if(t){ t.type=quickType; t.amount=amount; t.category=category; t.note=note; t.date=date; }
     } else {
-      transactions.push({ id: uid(), type: quickType, amount, category, note, date, time: new Date().toTimeString().slice(0,5), source:'manual' });
+      const newTx = { id: uid(), type: quickType, amount, category, note, date, time: new Date().toTimeString().slice(0,5), source:'manual' };
+      if(pendingRecurringId) newTx.recurringId = pendingRecurringId;
+      transactions.push(newTx);
     }
+    pendingRecurringId = null;
     saveData();
     closeSheet();
     render();
     showToast(editingId ? "Đã cập nhật" : "Đã ghi vào sổ");
+    if(quickType==='chi') checkBudgetWarning(category, date);
+  }
+  function checkBudgetWarning(category, txDate){
+    const limit = categoryLimits[category];
+    if(!limit || limit<=0) return;
+    const d = new Date(txDate+'T00:00:00');
+    const total = transactions
+      .filter(t=>t.type==='chi' && t.category===category)
+      .filter(t=>{ const td=new Date(t.date+'T00:00:00'); return td.getMonth()===d.getMonth() && td.getFullYear()===d.getFullYear(); })
+      .reduce((s,t)=>s+t.amount,0);
+    if(total > limit) showToast(`⚠ Đã vượt hạn mức "${category}" tháng này`);
   }
   function openEdit(id){
     const t = transactions.find(x=>x.id===id);
@@ -629,6 +822,307 @@
     if(currentMonth<0){ currentMonth=11; currentYear--; }
     if(currentMonth>11){ currentMonth=0; currentYear++; }
     render();
+  }
+
+  // ---------- Month picker ----------
+  function openMonthPicker(){
+    const val = currentYear + '-' + String(currentMonth+1).padStart(2,'0');
+    const html = `
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Đi tới tháng</div>
+      <div class="field">
+        <input type="month" class="text-input" id="f-month" value="${val}" style="font-size:15px;padding:12px;">
+      </div>
+      <div class="sheet-actions">
+        <button class="btn-ghost" onclick="App.closeSheet()">Hủy</button>
+        <button class="btn-primary" onclick="App.goToMonth()">Đi tới</button>
+      </div>
+    `;
+    document.getElementById('sheet-body').innerHTML = html;
+    showOverlay();
+  }
+  function goToMonth(){
+    const val = document.getElementById('f-month').value;
+    if(!val) return;
+    const [y,m] = val.split('-').map(Number);
+    currentYear = y; currentMonth = m-1;
+    closeSheet();
+    render();
+  }
+
+  // ---------- Settings menu ----------
+  function openSettingsMenu(){
+    const html = `
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Cài đặt</div>
+      <div class="menu-item" onclick="App.openLimitsSettings()">
+        <div class="menu-icon">🎯</div><div class="menu-label">Hạn mức chi tiêu theo hạng mục</div><div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="App.openRecurringSettings()">
+        <div class="menu-icon">📌</div><div class="menu-label">Khoản cố định hàng tháng</div><div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="App.openMultiMonthChart()">
+        <div class="menu-icon">📊</div><div class="menu-label">Biểu đồ nhiều tháng</div><div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="App.openPinSettings()">
+        <div class="menu-icon">🔒</div><div class="menu-label">${localStorage.getItem('so_quy_pin') ? 'Đổi / tắt mã PIN' : 'Đặt mã PIN'}</div><div class="menu-arrow">›</div>
+      </div>
+      <div class="sheet-actions" style="margin-top:14px;">
+        <button class="btn-ghost" onclick="App.closeSheet()" style="width:100%">Đóng</button>
+      </div>
+    `;
+    document.getElementById('sheet-body').innerHTML = html;
+    showOverlay();
+  }
+
+  // ---------- Budget limits ----------
+  function openLimitsSettings(){
+    const rows = CHI_CATS.map(cat=>{
+      const val = categoryLimits[cat] || '';
+      return `<div class="field">
+        <div class="field-label">${cat}</div>
+        <input type="tel" inputmode="numeric" class="text-input" data-limit-cat="${escapeHtml(cat)}" placeholder="Không giới hạn" value="${val}">
+      </div>`;
+    }).join('');
+    const html = `
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Hạn mức chi tiêu / tháng</div>
+      <div class="preview-note">Để trống nếu không muốn đặt hạn mức cho hạng mục đó.</div>
+      ${rows}
+      <div class="sheet-actions">
+        <button class="btn-ghost" onclick="App.openSettingsMenu()">Quay lại</button>
+        <button class="btn-primary" onclick="App.saveLimits()">Lưu hạn mức</button>
+      </div>
+    `;
+    document.getElementById('sheet-body').innerHTML = html;
+    showOverlay();
+  }
+  function saveLimits(){
+    const inputs = document.querySelectorAll('[data-limit-cat]');
+    const next = {};
+    inputs.forEach(inp=>{
+      const v = parseInt((inp.value||'').replace(/[^\d]/g,''), 10);
+      if(v>0) next[inp.dataset.limitCat] = v;
+    });
+    categoryLimits = next;
+    saveData();
+    closeSheet();
+    render();
+    showToast("Đã lưu hạn mức");
+  }
+
+  // ---------- Recurring monthly items ----------
+  function debtRemaining(item){
+    if(!item.isDebt) return null;
+    const paid = transactions.filter(t=>t.recurringId===item.id && t.type==='chi').reduce((s,t)=>s+t.amount,0);
+    return Math.max(0, (item.debtTotal||0) - paid);
+  }
+  function openRecurringSettings(){
+    const loggedIds = loggedRecurringIdsThisMonth();
+    const items = recurringItems.map(r=>{
+      const logged = loggedIds.has(r.id);
+      let debtHtml = '';
+      if(r.isDebt){
+        const remain = debtRemaining(r);
+        const pct = r.debtTotal ? Math.round((1 - remain/r.debtTotal)*100) : 0;
+        debtHtml = `<div class="rec-debt-bar"><div class="rec-debt-fill" style="width:${pct}%"></div></div>
+          <div class="rec-debt-text">Còn lại ${fmt(remain)}đ / ${fmt(r.debtTotal||0)}đ</div>`;
+      }
+      return `<div class="rec-item">
+        <div class="rec-top">
+          <div class="rec-name">${escapeHtml(r.name)} ${logged?'<span style="color:var(--income);font-size:11px;">· đã ghi tháng này</span>':''}</div>
+          <div class="rec-amt">~${fmt(r.defaultAmount||0)}đ</div>
+        </div>
+        ${debtHtml}
+        <div class="rec-actions">
+          <button class="rec-log-btn" onclick="App.quickLogRecurring('${r.id}')">Ghi tháng này</button>
+          <button class="rec-del-btn" onclick="App.deleteRecurringItem('${r.id}')">Xóa</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    const html = `
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Khoản cố định hàng tháng</div>
+      <div class="preview-note">VD: tiền nhà, tiền điện, tiền nước, trả nợ ngân hàng — app sẽ nhắc mỗi tháng nếu chưa ghi.</div>
+      ${items || '<div class="preview-note">Chưa có khoản nào.</div>'}
+      <div class="sheet-title" style="font-size:14px;margin-top:18px;">Thêm khoản mới</div>
+      <div class="type-toggle">
+        <button id="rf-thu-btn" class="" onclick="App.setRecType('thu')">↓ Khoản Thu</button>
+        <button id="rf-chi-btn" class="active chi" onclick="App.setRecType('chi')">↑ Khoản Chi</button>
+      </div>
+      <div class="field">
+        <div class="field-label">Tên khoản</div>
+        <input type="text" class="text-input" id="rf-name" placeholder="VD: Tiền nhà, Trả nợ ngân hàng...">
+      </div>
+      <div class="field">
+        <div class="field-label">Hạng mục</div>
+        <div class="cat-chips" id="rf-cats">${CHI_CATS.map((c,i)=>`<div class="cat-chip ${i===0?'active':''}" data-cat="${escapeHtml(c)}" onclick="App.pickRecCat(this)">${c}</div>`).join('')}</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Số tiền gợi ý mỗi tháng (đ)</div>
+        <input type="tel" inputmode="numeric" class="text-input" id="rf-amount" placeholder="0">
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-muted);margin-bottom:12px;">
+        <input type="checkbox" id="rf-isdebt" onchange="document.getElementById('rf-debttotal-wrap').style.display=this.checked?'block':'none'">
+        Đây là khoản trả nợ (theo dõi số dư còn lại)
+      </label>
+      <div class="field" id="rf-debttotal-wrap" style="display:none;">
+        <div class="field-label">Tổng nợ ban đầu (đ)</div>
+        <input type="tel" inputmode="numeric" class="text-input" id="rf-debttotal" placeholder="0">
+      </div>
+      <div class="sheet-actions">
+        <button class="btn-ghost" onclick="App.openSettingsMenu()">Quay lại</button>
+        <button class="btn-primary" onclick="App.addRecurringItem()">Thêm khoản</button>
+      </div>
+    `;
+    document.getElementById('sheet-body').innerHTML = html;
+    document.getElementById('sheet-body').dataset.recType = 'chi';
+    showOverlay();
+  }
+  function setRecType(t){
+    document.getElementById('sheet-body').dataset.recType = t;
+    document.getElementById('rf-thu-btn').className = t==='thu' ? 'active thu' : '';
+    document.getElementById('rf-chi-btn').className = t==='chi' ? 'active chi' : '';
+    const cats = t==='thu' ? THU_CATS : CHI_CATS;
+    document.getElementById('rf-cats').innerHTML = cats.map((c,i)=>`<div class="cat-chip ${i===0?'active':''}" data-cat="${escapeHtml(c)}" onclick="App.pickRecCat(this)">${c}</div>`).join('');
+  }
+  function pickRecCat(el){
+    document.querySelectorAll('#rf-cats .cat-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+  }
+  function addRecurringItem(){
+    const name = document.getElementById('rf-name').value.trim();
+    const amount = parseInt((document.getElementById('rf-amount').value||'0').replace(/[^\d]/g,''), 10) || 0;
+    const type = document.getElementById('sheet-body').dataset.recType || 'chi';
+    const activeCatEl = document.querySelector('#rf-cats .cat-chip.active');
+    const category = activeCatEl ? activeCatEl.dataset.cat : CHI_CATS[0];
+    const isDebt = document.getElementById('rf-isdebt').checked;
+    const debtTotal = isDebt ? (parseInt((document.getElementById('rf-debttotal').value||'0').replace(/[^\d]/g,''), 10) || 0) : 0;
+    if(!name){ showToast("Nhập tên khoản"); return; }
+    recurringItems.push({ id: uid(), name, type, category, defaultAmount: amount, isDebt, debtTotal });
+    saveData();
+    openRecurringSettings();
+    showToast("Đã thêm khoản cố định");
+  }
+  function deleteRecurringItem(id){
+    recurringItems = recurringItems.filter(r=>r.id!==id);
+    saveData();
+    openRecurringSettings();
+    showToast("Đã xóa khoản cố định");
+  }
+  function quickLogRecurring(id){
+    const item = recurringItems.find(r=>r.id===id);
+    if(!item) return;
+    openQuick(item.type, { amount: item.defaultAmount || '', category: item.category, note: item.name, date: todayISO(), recurringId: item.id });
+  }
+
+  // ---------- Multi-month comparison chart ----------
+  function openMultiMonthChart(){
+    const months = [];
+    for(let i=5;i>=0;i--){
+      let m = currentMonth - i, y = currentYear;
+      while(m<0){ m+=12; y--; }
+      months.push({m,y});
+    }
+    const totals = months.map(({m,y})=>{
+      const list = transactions.filter(t=>{ const d=new Date(t.date+'T00:00:00'); return d.getMonth()===m && d.getFullYear()===y; });
+      const thu = list.filter(t=>t.type==='thu').reduce((s,t)=>s+t.amount,0);
+      const chi = list.filter(t=>t.type==='chi').reduce((s,t)=>s+t.amount,0);
+      return {m,y,thu,chi};
+    });
+    const maxVal = Math.max(1, ...totals.map(t=>Math.max(t.thu,t.chi)));
+    const cols = totals.map(t=>{
+      const hThu = Math.max(2, Math.round(t.thu/maxVal*130));
+      const hChi = Math.max(2, Math.round(t.chi/maxVal*130));
+      const label = String(t.m+1).padStart(2,'0')+'/'+String(t.y).slice(2);
+      return `<div class="mchart-col">
+        <div class="mchart-bars">
+          <div class="mchart-bar" style="height:${hThu}px;background:var(--income)"></div>
+          <div class="mchart-bar" style="height:${hChi}px;background:var(--expense)"></div>
+        </div>
+        <div class="mchart-label">${label}</div>
+      </div>`;
+    }).join('');
+    const html = `
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Thu chi 6 tháng gần đây</div>
+      <div class="mchart">${cols}</div>
+      <div class="mchart-legend">
+        <span><span class="mchart-dot" style="background:var(--income)"></span>Thu</span>
+        <span><span class="mchart-dot" style="background:var(--expense)"></span>Chi</span>
+      </div>
+      <div class="sheet-actions" style="margin-top:20px;">
+        <button class="btn-ghost" onclick="App.openSettingsMenu()">Quay lại</button>
+        <button class="btn-primary" onclick="App.closeSheet()">Đóng</button>
+      </div>
+    `;
+    document.getElementById('sheet-body').innerHTML = html;
+    showOverlay();
+  }
+
+  // ---------- PIN lock ----------
+  function checkPinLock(){
+    const pin = localStorage.getItem('so_quy_pin');
+    if(!pin){ initSync(); return; }
+    renderLockScreen();
+  }
+  function renderLockScreen(err){
+    document.getElementById('app').innerHTML = `
+      <div class="lock-wrap">
+        <div class="lock-stamp">🔒</div>
+        <div class="lock-title">Sổ Quỹ đã khóa</div>
+        <div class="lock-sub">${err ? '<span style="color:var(--expense)">Sai mã PIN, thử lại nhé</span>' : 'Nhập mã PIN để mở sổ'}</div>
+        <input type="password" inputmode="numeric" maxlength="6" class="lock-input" id="pin-try" placeholder="••••">
+        <button class="lock-btn" onclick="App.tryUnlock()">Mở khóa</button>
+      </div>
+    `;
+    const el = document.getElementById('pin-try');
+    el.focus();
+    el.addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryUnlock(); });
+  }
+  function tryUnlock(){
+    const input = document.getElementById('pin-try').value;
+    const stored = localStorage.getItem('so_quy_pin');
+    if(input && input===stored){ initSync(); }
+    else { renderLockScreen(true); }
+  }
+  function openPinSettings(){
+    const hasPin = !!localStorage.getItem('so_quy_pin');
+    const html = `
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">${hasPin ? 'Đổi hoặc tắt mã PIN' : 'Đặt mã PIN'}</div>
+      <div class="preview-note">Mã PIN chỉ khóa màn hình trên thiết bị này, không ảnh hưởng đến dữ liệu đồng bộ.</div>
+      <div class="field">
+        <div class="field-label">Mã PIN mới (4–6 số)</div>
+        <input type="password" inputmode="numeric" maxlength="6" class="text-input" id="pin-new" placeholder="••••">
+      </div>
+      <div class="field">
+        <div class="field-label">Nhập lại mã PIN</div>
+        <input type="password" inputmode="numeric" maxlength="6" class="text-input" id="pin-confirm" placeholder="••••">
+      </div>
+      <div class="sheet-actions">
+        <button class="btn-ghost" onclick="App.openSettingsMenu()">Quay lại</button>
+        <button class="btn-primary" onclick="App.savePin()">Lưu mã PIN</button>
+      </div>
+      ${hasPin ? `<button class="btn-danger" onclick="App.removePin()">Tắt khóa PIN</button>` : ''}
+    `;
+    document.getElementById('sheet-body').innerHTML = html;
+    showOverlay();
+  }
+  function savePin(){
+    const a = document.getElementById('pin-new').value;
+    const b = document.getElementById('pin-confirm').value;
+    if(!/^\d{4,6}$/.test(a)){ showToast("Mã PIN cần 4–6 chữ số"); return; }
+    if(a!==b){ showToast("Hai mã PIN không khớp"); return; }
+    localStorage.setItem('so_quy_pin', a);
+    closeSheet();
+    showToast("Đã đặt mã PIN");
+  }
+  function removePin(){
+    localStorage.removeItem('so_quy_pin');
+    closeSheet();
+    showToast("Đã tắt khóa PIN");
   }
 
   // ---------- Import wizard ----------
@@ -856,7 +1350,11 @@
 
   window.App = {
     openQuick, switchQuickType, pickCat, saveQuick, openEdit, deleteTx, closeSheet,
-    shiftMonth, openImport, handleCsv, setMapping, buildPreview, confirmImport
+    shiftMonth, openImport, handleCsv, setMapping, buildPreview, confirmImport,
+    updateSearch, setFilterType, openMonthPicker, goToMonth, openSettingsMenu,
+    openLimitsSettings, saveLimits, openRecurringSettings, setRecType, pickRecCat,
+    addRecurringItem, deleteRecurringItem, quickLogRecurring, openMultiMonthChart,
+    tryUnlock, openPinSettings, savePin, removePin
   };
 
   // build overlay shell once
@@ -866,7 +1364,7 @@
     </div>
   `);
 
-  initSync();
+  checkPinLock();
 })();
 </script>
 
