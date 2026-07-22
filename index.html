@@ -302,9 +302,20 @@
 <div id="app"><div class="loading-screen">Đang mở sổ quỹ…</div></div>
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js"></script>
+
 <script>
 (function(){
-  const STORAGE_KEY = "transactions";
+  const SYNC_CODE = "t9d85-3r39r-vgmew-8begz";
+  const firebaseConfig = {
+    apiKey: "AIzaSyCzZFt09qkrBIG9pS8i-UyyVEyh5Swr2ME",
+    authDomain: "so-quy-4e942.firebaseapp.com",
+    projectId: "so-quy-4e942",
+    storageBucket: "so-quy-4e942.firebasestorage.app",
+    messagingSenderId: "844668189212",
+    appId: "1:844668189212:web:18ed5e647fec7c7c163dd9"
+  };
   let transactions = [];
   let currentDate = new Date();
   let currentMonth = currentDate.getMonth();
@@ -343,36 +354,57 @@
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   }
 
-  const AppStorage = {
-    async get(key){
-      try{
-        const v = localStorage.getItem(key);
-        return v !== null ? { key, value: v } : null;
-      }catch(e){ return null; }
-    },
-    async set(key, value){
-      try{
-        localStorage.setItem(key, value);
-        return { key, value };
-      }catch(e){ return null; }
-    }
-  };
+  let docRef = null;
+  let syncState = 'connecting'; // connecting | synced | offline | error
+  let firstSnapshot = true;
 
-  async function loadData(){
-    try{
-      const res = await AppStorage.get(STORAGE_KEY);
-      transactions = res && res.value ? JSON.parse(res.value) : [];
-    }catch(e){
-      transactions = [];
-    }
-    render();
+  function setSyncState(s){
+    syncState = s;
+    const el = document.getElementById('sync-dot');
+    if(el) el.outerHTML = syncDotHtml();
   }
-  async function saveData(){
+  function syncDotHtml(){
+    const map = {
+      connecting: ['#8B93AA','Đang kết nối…'],
+      synced: ['#4FAE8E','Đã đồng bộ'],
+      offline: ['#D4A857','Ngoại tuyến — sẽ tự đồng bộ khi có mạng'],
+      error: ['#D1495B','Lỗi đồng bộ']
+    };
+    const [color,label] = map[syncState] || map.connecting;
+    return `<span id="sync-dot" title="${label}" style="display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:${color};letter-spacing:0.04em;">
+      <span style="width:6px;height:6px;border-radius:50%;background:${color};display:inline-block;"></span>${label}
+    </span>`;
+  }
+
+  function initSync(){
     try{
-      const res = await AppStorage.set(STORAGE_KEY, JSON.stringify(transactions));
-      if(!res) showToast("Không lưu được, thử lại nhé");
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      db.enablePersistence({ synchronizeTabs:true }).catch(()=>{});
+      docRef = db.collection('soquy').doc(SYNC_CODE);
+      docRef.onSnapshot((doc)=>{
+        const data = doc.exists ? doc.data() : null;
+        transactions = (data && Array.isArray(data.transactions)) ? data.transactions : [];
+        setSyncState(doc.metadata.fromCache ? 'offline' : 'synced');
+        firstSnapshot = false;
+        render();
+      }, ()=>{
+        setSyncState('error');
+        if(firstSnapshot){ transactions = []; firstSnapshot=false; render(); }
+      });
     }catch(e){
-      showToast("Lỗi lưu dữ liệu");
+      setSyncState('error');
+      transactions = [];
+      render();
+    }
+  }
+
+  async function saveData(){
+    if(!docRef){ showToast("Chưa kết nối đồng bộ"); return; }
+    try{
+      await docRef.set({ transactions, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    }catch(e){
+      showToast("Chưa lưu lên mây được, sẽ tự thử lại khi có mạng");
     }
   }
 
@@ -456,7 +488,7 @@
         <div class="brand">
           <div>
             <div class="brand-title">Sổ <span>Quỹ</span></div>
-            <div class="brand-sub">Thu chi cá nhân</div>
+            <div class="brand-sub">Thu chi cá nhân · ${syncDotHtml()}</div>
           </div>
         </div>
         <div class="month-nav">
@@ -834,7 +866,7 @@
     </div>
   `);
 
-  loadData();
+  initSync();
 })();
 </script>
 
