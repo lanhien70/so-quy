@@ -278,7 +278,8 @@
   }
   .drop:active{ background:var(--gold-soft); }
   .map-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-  .map-col-name{ flex:1; font-size:12.5px; color:var(--text); font-family:var(--font-mono); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .map-col-name{ flex:1; font-size:12.5px; color:var(--text); font-family:var(--font-mono); line-height:1.5; }
+  .map-row{ align-items:flex-start !important; }
   .map-select{ width:150px; flex-shrink:0; }
   .preview-note{ font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:12px; }
   .preview-box{ max-height:220px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; padding:8px 10px; margin-bottom:14px; }
@@ -429,6 +430,12 @@
 <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script type="module">
+  import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs";
+  window.pdfjsLib = pdfjsLib;
+</script>
 
 <script>
 (function(){
@@ -1237,12 +1244,14 @@
       <div class="sheet-title">Nhập từ file sao kê ngân hàng</div>
       <div class="step-label">Bước 1 · Chọn file</div>
       <div class="preview-note">
-        Xuất file CSV/Excel (lưu dạng CSV) sao kê giao dịch từ app ngân hàng của anh, rồi chọn file đó ở đây.
+        Chọn file sao kê từ app ngân hàng của anh — hỗ trợ CSV, Excel (.xlsx/.xls), hoặc PDF.
         App sẽ đọc và cho anh xác nhận trước khi ghi vào sổ — không tự động ghi ngay.
+        <br><br>
+        <b>Lưu ý:</b> CSV/Excel đọc chính xác nhất. File PDF là tính năng thử nghiệm (bảng trong PDF không có cấu trúc cột rõ ràng), hãy kiểm tra kỹ ở bước xác nhận trước khi lưu.
       </div>
       <label class="drop">
-        📄 Bấm để chọn file .csv
-        <input type="file" accept=".csv,.txt" style="display:none" id="f-csv" onchange="App.handleCsv(event)">
+        📄 Bấm để chọn file (CSV / Excel / PDF)
+        <input type="file" accept=".csv,.txt,.xlsx,.xls,.pdf" style="display:none" id="f-csv" onchange="App.handleStatementFile(event)">
       </label>
       <div class="sheet-actions" style="margin-top:16px;">
         <button class="btn-ghost" onclick="App.closeSheet()" style="width:100%">Đóng</button>
@@ -1284,9 +1293,20 @@
     return 'skip';
   }
 
-  function handleCsv(evt){
+  function handleStatementFile(evt){
     const file = evt.target.files[0];
     if(!file) return;
+    const name = (file.name||'').toLowerCase();
+    if(name.endsWith('.xlsx') || name.endsWith('.xls')){
+      handleExcelFile(file);
+    } else if(name.endsWith('.pdf')){
+      handlePdfFile(file);
+    } else {
+      handleCsvFile(file);
+    }
+  }
+
+  function handleCsvFile(file){
     const reader = new FileReader();
     reader.onload = function(e){
       let text = e.target.result;
@@ -1298,10 +1318,108 @@
       importRows = lines.slice(1).map(l=>parseCsvLine(l, delim));
       importMapping = {};
       importHeaders.forEach((h,i)=>{ importMapping[i] = guessRole(h); });
-      renderMappingStep(delim);
+      renderMappingStep();
     };
     reader.onerror = function(){ showToast("Không đọc được file"); };
     reader.readAsText(file, 'UTF-8');
+  }
+
+  function cellToString(cell){
+    if(cell instanceof Date){
+      const y = cell.getFullYear(), m = String(cell.getMonth()+1).padStart(2,'0'), d = String(cell.getDate()).padStart(2,'0');
+      return `${y}-${m}-${d}`;
+    }
+    return (cell !== undefined && cell !== null) ? String(cell) : '';
+  }
+
+  function handleExcelFile(file){
+    if(typeof XLSX === 'undefined'){ showToast("Đang tải công cụ đọc Excel, đợi vài giây rồi thử lại"); return; }
+    const reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type:'array', cellDates:true });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header:1, defval:'' })
+          .map(r => r.map(cellToString))
+          .filter(r => r.some(c => c.trim() !== ''));
+        if(rows.length < 2){ showToast("File Excel không có dữ liệu"); return; }
+        importHeaders = rows[0];
+        const width = importHeaders.length;
+        importRows = rows.slice(1).map(r=>{
+          const row = r.slice(0, width);
+          while(row.length < width) row.push('');
+          return row;
+        });
+        importMapping = {};
+        importHeaders.forEach((h,i)=>{ importMapping[i] = guessRole(h); });
+        renderMappingStep();
+      }catch(err){
+        showToast("Không đọc được file Excel này");
+      }
+    };
+    reader.onerror = function(){ showToast("Không đọc được file"); };
+    reader.readAsArrayBuffer(file);
+  }
+
+  async function handlePdfFile(file){
+    if(!window.pdfjsLib){ showToast("Đang tải công cụ đọc PDF, đợi vài giây rồi thử lại"); return; }
+    document.getElementById('sheet-body').innerHTML = `
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Đang đọc PDF…</div>
+      <div class="scan-progress"><div class="scan-spinner"></div><div class="scan-status">Đang trích xuất bảng trong file…</div></div>
+    `;
+    try{
+      const buf = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+      let allLines = [];
+      for(let p=1; p<=pdf.numPages; p++){
+        const page = await pdf.getPage(p);
+        const content = await page.getTextContent();
+        const items = content.items
+          .map(it=>({ text: it.str, x: it.transform[4], y: it.transform[5] }))
+          .filter(it=> it.text.trim() !== '');
+        if(!items.length) continue;
+        const lineMap = new Map();
+        items.forEach(it=>{
+          const key = Math.round(it.y/3)*3;
+          if(!lineMap.has(key)) lineMap.set(key, []);
+          lineMap.get(key).push(it);
+        });
+        const orderedLines = Array.from(lineMap.entries())
+          .sort((a,b)=> b[0]-a[0])
+          .map(([,its])=> its.sort((a,b)=>a.x-b.x));
+        orderedLines.forEach(lineItems=>{
+          const cols = [];
+          let cur = lineItems[0].text;
+          let lastX = lineItems[0].x + lineItems[0].text.length*3.2;
+          for(let i=1;i<lineItems.length;i++){
+            const gap = lineItems[i].x - lastX;
+            if(gap > 20){ cols.push(cur.trim()); cur = lineItems[i].text; }
+            else{ cur += ' ' + lineItems[i].text; }
+            lastX = lineItems[i].x + lineItems[i].text.length*3.2;
+          }
+          cols.push(cur.trim());
+          if(cols.some(c=>c)) allLines.push(cols);
+        });
+      }
+      if(allLines.length < 2){ showToast("Không đọc được bảng trong PDF (có thể là ảnh scan)"); openImport(); return; }
+      const width = Math.max(...allLines.map(r=>r.length));
+      const padded = allLines.map(r=>{
+        const row = r.slice(0, width);
+        while(row.length < width) row.push('');
+        return row;
+      });
+      importHeaders = padded[0];
+      importRows = padded.slice(1);
+      importMapping = {};
+      importHeaders.forEach((h,i)=>{ importMapping[i] = guessRole(h); });
+      renderMappingStep();
+      showToast("Đọc PDF là tính năng thử nghiệm — kiểm tra kỹ trước khi lưu");
+    }catch(err){
+      showToast("Không đọc được file PDF này");
+      openImport();
+    }
   }
 
   function renderMappingStep(){
@@ -1313,10 +1431,12 @@
       ['chi','Số tiền ra (Chi)'],
       ['amount','Số tiền (kèm dấu +/-)'],
     ];
+    const sample = importRows[0] || [];
     const rows = importHeaders.map((h,i)=>{
       const opts = roleOptions.map(([v,label])=>`<option value="${v}" ${importMapping[i]===v?'selected':''}>${label}</option>`).join('');
+      const sampleVal = sample[i] ? escapeHtml(String(sample[i]).slice(0,28)) : '';
       return `<div class="map-row">
-        <div class="map-col-name">${escapeHtml(h||('Cột '+(i+1)))}</div>
+        <div class="map-col-name">${escapeHtml(h||('Cột '+(i+1)))}${sampleVal ? `<br><span style="color:var(--text-dim);font-weight:400;">VD: ${sampleVal}</span>` : ''}</div>
         <select class="select-input map-select" onchange="App.setMapping(${i}, this.value)">${opts}</select>
       </div>`;
     }).join('');
@@ -1455,7 +1575,7 @@
 
   window.App = {
     openQuick, switchQuickType, pickCat, saveQuick, openEdit, deleteTx, closeSheet,
-    shiftMonth, openImport, handleCsv, setMapping, buildPreview, confirmImport,
+    shiftMonth, openImport, handleStatementFile, setMapping, buildPreview, confirmImport,
     updateSearch, setFilterType, openMonthPicker, goToMonth, openSettingsMenu,
     openLimitsSettings, saveLimits, openRecurringSettings, setRecType, pickRecCat,
     addRecurringItem, deleteRecurringItem, quickLogRecurring, openMultiMonthChart,
