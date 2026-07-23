@@ -405,6 +405,22 @@
     background:var(--gold); color:#fff; border:none; border-radius:12px; padding:12px 28px;
     font-weight:800; font-size:14px; cursor:pointer; font-family:var(--font-display);
   }
+
+  /* ---------- Auth (login/signup) ---------- */
+  .auth-form{ width:100%; max-width:280px; }
+  .auth-input{
+    width:100%; background:var(--input-bg); border:1px solid var(--line-strong); border-radius:12px;
+    padding:13px 14px; font-family:var(--font-display); font-size:14px; color:var(--text); margin-bottom:12px;
+  }
+  .auth-input:focus{ outline:none; border-color:var(--gold); }
+  .auth-error{ color:var(--expense); font-size:12px; margin-bottom:10px; text-align:center; min-height:16px; }
+  .auth-btn{
+    width:100%; background:var(--gold); color:#fff; border:none; border-radius:12px; padding:13px;
+    font-weight:800; font-size:14px; cursor:pointer; font-family:var(--font-display); margin-bottom:14px;
+  }
+  .auth-links{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .auth-link{ font-size:12.5px; color:var(--gold); cursor:pointer; font-weight:600; }
+  .auth-link.muted{ color:var(--text-dim); }
 </style>
 
 <div id="app"><div class="loading-screen">Đang mở sổ quỹ…</div></div>
@@ -412,10 +428,11 @@
 
 <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.11.0/firebase-auth-compat.js"></script>
 
 <script>
 (function(){
-  const SYNC_CODE = "t9d85-3r39r-vgmew-8begz";
+  const LEGACY_SYNC_CODE = "t9d85-3r39r-vgmew-8begz";
   const firebaseConfig = {
     apiKey: "AIzaSyCzZFt09qkrBIG9pS8i-UyyVEyh5Swr2ME",
     authDomain: "so-quy-4e942.firebaseapp.com",
@@ -424,6 +441,8 @@
     messagingSenderId: "844668189212",
     appId: "1:844668189212:web:18ed5e647fec7c7c163dd9"
   };
+  let currentUser = null;
+  let authMode = 'login'; // login | signup
   let transactions = [];
   let categoryLimits = {};
   let recurringItems = [];
@@ -489,12 +508,31 @@
     </span>`;
   }
 
-  function initSync(){
+  async function initSync(){
     try{
-      firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
       db.enablePersistence({ synchronizeTabs:true }).catch(()=>{});
-      docRef = db.collection('soquy').doc(SYNC_CODE);
+      docRef = db.collection('soquy').doc(currentUser.uid);
+
+      try{
+        const snap = await docRef.get();
+        if(!snap.exists){
+          const legacyRef = db.collection('soquy').doc(LEGACY_SYNC_CODE);
+          const legacySnap = await legacyRef.get().catch(()=>null);
+          if(legacySnap && legacySnap.exists && !legacySnap.data().migrated){
+            const legacy = legacySnap.data();
+            await docRef.set({
+              transactions: Array.isArray(legacy.transactions) ? legacy.transactions : [],
+              categoryLimits: (legacy.categoryLimits && typeof legacy.categoryLimits==='object') ? legacy.categoryLimits : {},
+              recurringItems: Array.isArray(legacy.recurringItems) ? legacy.recurringItems : [],
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            await legacyRef.set({ migrated: true }, { merge: true }).catch(()=>{});
+            showToast("Đã chuyển dữ liệu cũ sang tài khoản mới");
+          }
+        }
+      }catch(e){ /* migration is best-effort; ignore and continue */ }
+
       docRef.onSnapshot((doc)=>{
         const data = doc.exists ? doc.data() : null;
         transactions = (data && Array.isArray(data.transactions)) ? data.transactions : [];
@@ -855,6 +893,7 @@
     const html = `
       <div class="sheet-handle"></div>
       <div class="sheet-title">Cài đặt</div>
+      <div class="preview-note" style="margin-top:-8px;">Đang đăng nhập: ${escapeHtml(currentUser ? currentUser.email : '')}</div>
       <div class="menu-item" onclick="App.openLimitsSettings()">
         <div class="menu-icon">🎯</div><div class="menu-label">Hạn mức chi tiêu theo hạng mục</div><div class="menu-arrow">›</div>
       </div>
@@ -866,6 +905,9 @@
       </div>
       <div class="menu-item" onclick="App.openPinSettings()">
         <div class="menu-icon">🔒</div><div class="menu-label">${localStorage.getItem('so_quy_pin') ? 'Đổi / tắt mã PIN' : 'Đặt mã PIN'}</div><div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="App.logout()">
+        <div class="menu-icon">↪</div><div class="menu-label" style="color:var(--expense);">Đăng xuất</div><div class="menu-arrow"></div>
       </div>
       <div class="sheet-actions" style="margin-top:14px;">
         <button class="btn-ghost" onclick="App.closeSheet()" style="width:100%">Đóng</button>
@@ -1059,6 +1101,69 @@
     `;
     document.getElementById('sheet-body').innerHTML = html;
     showOverlay();
+  }
+
+  // ---------- Auth (login/signup) ----------
+  function renderAuthScreen(errMsg){
+    const isSignup = authMode === 'signup';
+    document.getElementById('app').innerHTML = `
+      <div class="lock-wrap">
+        <div class="lock-stamp">📖</div>
+        <div class="lock-title">Sổ Quỹ</div>
+        <div class="lock-sub">${isSignup ? 'Tạo tài khoản mới' : 'Đăng nhập để mở sổ của bạn'}</div>
+        <div class="auth-form">
+          <div class="auth-error">${errMsg||''}</div>
+          <input type="email" class="auth-input" id="auth-email" placeholder="Email" autocomplete="email">
+          <input type="password" class="auth-input" id="auth-password" placeholder="Mật khẩu (từ 6 ký tự)" autocomplete="${isSignup?'new-password':'current-password'}">
+          <button class="auth-btn" onclick="App.submitAuth()">${isSignup ? 'Đăng ký' : 'Đăng nhập'}</button>
+          <div class="auth-links">
+            ${isSignup
+              ? `<div class="auth-link" onclick="App.switchAuthMode('login')">Đã có tài khoản? Đăng nhập</div>`
+              : `<div class="auth-link" onclick="App.switchAuthMode('signup')">Chưa có tài khoản? Đăng ký ngay</div>
+                 <div class="auth-link muted" onclick="App.forgotPassword()">Quên mật khẩu?</div>`
+            }
+          </div>
+        </div>
+      </div>
+    `;
+    const pwEl = document.getElementById('auth-password');
+    pwEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter') submitAuth(); });
+  }
+  function switchAuthMode(mode){
+    authMode = mode;
+    renderAuthScreen();
+  }
+  function authErrorMessage(code){
+    const map = {
+      'auth/invalid-email': 'Email không hợp lệ',
+      'auth/missing-password': 'Nhập mật khẩu nhé',
+      'auth/user-not-found': 'Không tìm thấy tài khoản này',
+      'auth/wrong-password': 'Sai mật khẩu',
+      'auth/invalid-credential': 'Sai email hoặc mật khẩu',
+      'auth/email-already-in-use': 'Email này đã có tài khoản — thử đăng nhập',
+      'auth/weak-password': 'Mật khẩu cần từ 6 ký tự trở lên',
+      'auth/too-many-requests': 'Thử sai nhiều lần, đợi một lát rồi thử lại'
+    };
+    return map[code] || 'Có lỗi xảy ra, thử lại nhé';
+  }
+  function submitAuth(){
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    if(!email || !password){ renderAuthScreen('Nhập đủ email và mật khẩu nhé'); return; }
+    const action = authMode==='signup'
+      ? firebase.auth().createUserWithEmailAndPassword(email, password)
+      : firebase.auth().signInWithEmailAndPassword(email, password);
+    action.catch(err=>{ renderAuthScreen(authErrorMessage(err.code)); });
+  }
+  function forgotPassword(){
+    const email = document.getElementById('auth-email').value.trim();
+    if(!email){ renderAuthScreen('Nhập email trước rồi bấm "Quên mật khẩu?"'); return; }
+    firebase.auth().sendPasswordResetEmail(email)
+      .then(()=> showToast("Đã gửi email đặt lại mật khẩu"))
+      .catch(err=> renderAuthScreen(authErrorMessage(err.code)));
+  }
+  function logout(){
+    firebase.auth().signOut();
   }
 
   // ---------- PIN lock ----------
@@ -1354,7 +1459,8 @@
     updateSearch, setFilterType, openMonthPicker, goToMonth, openSettingsMenu,
     openLimitsSettings, saveLimits, openRecurringSettings, setRecType, pickRecCat,
     addRecurringItem, deleteRecurringItem, quickLogRecurring, openMultiMonthChart,
-    tryUnlock, openPinSettings, savePin, removePin
+    tryUnlock, openPinSettings, savePin, removePin,
+    switchAuthMode, submitAuth, forgotPassword, logout
   };
 
   // build overlay shell once
@@ -1364,12 +1470,23 @@
     </div>
   `);
 
-  checkPinLock();
+  try{ firebase.initializeApp(firebaseConfig); }catch(e){}
+  firebase.auth().onAuthStateChanged((user)=>{
+    if(user){
+      currentUser = user;
+      checkPinLock();
+    } else {
+      currentUser = null;
+      docRef = null;
+      renderAuthScreen();
+    }
+  });
 })();
 </script>
 
 
 <script>
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js').catch(() => {});
